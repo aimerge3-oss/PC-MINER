@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="var(--tg-theme-bg-color)" />
-  <title>PC-Miner — Telegram Mini App</title>
+  <title>Crypto Rigs: Master &amp; Mining</title>
 
-  <!-- Telegram WebApp SDK (должен быть подключен до инициализации приложения) -->
+  <!-- Telegram WebApp SDK (подключается до инициализации приложения) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Стили приложения -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -17,21 +16,27 @@
   <!-- ======================= ШАПКА ======================= -->
   <header class="app-header" id="app-header">
     <div class="header-left">
-      <div class="avatar" id="user-avatar" title="Профиль игрока">👤</div>
+      <div class="avatar" id="user-avatar">🧑‍🔧</div>
       <div class="user-meta">
         <span class="user-name" id="user-name">Игрок</span>
-        <span class="user-level" id="user-level">Уровень 1</span>
+        <span class="user-level" id="user-level">Уровень 1 · 0 XP</span>
       </div>
     </div>
 
     <div class="header-right">
-      <div class="balance-chip" id="balance-chip" title="Основная валюта">
+      <div class="balance-chip" title="Рубли">
         <span class="chip-icon">💰</span>
-        <span class="chip-value" id="balance-value">0</span>
+        <span class="chip-value" id="balance-value">50 000</span>
+        <span class="chip-cur">₽</span>
       </div>
-      <div class="balance-chip balance-chip--crypto" id="crypto-chip" title="Крипто-баланс">
-        <span class="chip-icon">⛏️</span>
-        <span class="chip-value" id="crypto-value">0.000000</span>
+      <div class="balance-chip balance-chip--crypto" title="Крипто-монеты CR">
+        <span class="chip-icon">🪙</span>
+        <span class="chip-value" id="coins-value">0.000000</span>
+        <span class="chip-cur">CR</span>
+      </div>
+      <div class="balance-chip balance-chip--energy" title="Энергия для FPS-дуэлей">
+        <span class="chip-icon">⚡</span>
+        <span class="chip-value" id="energy-value">10</span>
       </div>
     </div>
   </header>
@@ -39,151 +44,229 @@
   <!-- =================== ОСНОВНАЯ ЗОНА =================== -->
   <main class="app-main" id="app-main">
 
-    <!-- ЭКРАН: МАСТЕРСКАЯ / СБОРКА -->
-    <section class="screen screen--active" id="screen-workshop" data-screen="workshop">
-      <h2 class="screen-title">🛠 Мастерская</h2>
+    <!-- ============ ЭКРАН: ФЕРМА ============ -->
+    <section class="screen screen--active" id="screen-farm" data-screen="farm">
+      <h2 class="screen-title">⛏️ Ферма</h2>
 
-      <!-- Кликер-зона -->
-      <div class="clicker-zone" id="clicker-zone">
-        <button class="clicker-button" id="clicker-btn" aria-label="Кликнуть для заработка">
-          <span class="clicker-icon">🖱️</span>
-          <span class="clicker-label">КЛИК</span>
+      <!-- Статус майнинга -->
+      <div class="panel mining-panel">
+        <div class="mining-stats">
+          <div class="stat"><span class="stat-label">Хэшрейт</span><b id="farm-hashrate">0 MH/s</b></div>
+          <div class="stat"><span class="stat-label">ASIC</span><b id="farm-th">0 TH/s</b></div>
+          <div class="stat"><span class="stat-label">Доход</span><b id="farm-rate">0 CR/ч</b></div>
+        </div>
+
+        <div class="mining-progress-wrap">
+          <div class="mining-progress"><div class="mining-progress-bar" id="mining-bar"></div></div>
+          <span class="mining-window-hint" id="mining-window-hint">Окно майнинга: 0 / 4 ч</span>
+        </div>
+
+        <div class="farm-actions">
+          <button class="btn btn--primary" id="btn-collect-income">📥 Забрать доход<br><small id="pending-coins">0.000000 CR</small></button>
+          <button class="btn btn--sell" id="btn-sell-coins">💱 Продать монеты<br><small>курс: 1 CR = 640 000 ₽</small></button>
+        </div>
+
+        <button class="tap-strip" id="btn-tap-farm">
+          👆 Тап по ферме <b id="tap-power">+50 ₽</b>
         </button>
-        <p class="clicker-hint">+<span id="click-power">1</span> ₽ за клик</p>
       </div>
 
-      <!-- Текущая сборка ПК -->
-      <div class="panel" id="build-panel">
+      <!-- Парк устройств -->
+      <div class="panel">
         <div class="panel-header">
-          <h3 class="panel-title">Текущая сборка</h3>
-          <button class="btn btn--small" id="btn-assemble">Собрать ПК</button>
+          <h3 class="panel-title">Устройства фермы</h3>
+          <span class="capacity-badge" id="devices-capacity">0 / 5</span>
         </div>
+        <div class="devices-grid" id="devices-grid"><!-- рендер из game.js --></div>
+      </div>
 
-        <ul class="parts-list" id="parts-list">
-          <li class="part-slot" data-slot="cpu">
-            <span class="part-slot-icon">🧠</span>
-            <span class="part-slot-label">Процессор</span>
-            <span class="part-slot-value" id="slot-cpu">—</span>
-          </li>
-          <li class="part-slot" data-slot="gpu">
-            <span class="part-slot-icon">🎮</span>
-            <span class="part-slot-label">Видеокарта</span>
-            <span class="part-slot-value" id="slot-gpu">—</span>
-          </li>
-          <li class="part-slot" data-slot="motherboard">
-            <span class="part-slot-icon">🔲</span>
-            <span class="part-slot-label">Материнская плата</span>
-            <span class="part-slot-value" id="slot-motherboard">—</span>
-          </li>
-          <li class="part-slot" data-slot="ram">
-            <span class="part-slot-icon">📊</span>
-            <span class="part-slot-label">Оперативная память</span>
-            <span class="part-slot-value" id="slot-ram">—</span>
-          </li>
-          <li class="part-slot" data-slot="storage">
-            <span class="part-slot-icon">💾</span>
-            <span class="part-slot-label">Накопитель</span>
-            <span class="part-slot-value" id="slot-storage">—</span>
-          </li>
-          <li class="part-slot" data-slot="cooling">
-            <span class="part-slot-icon">❄️</span>
-            <span class="part-slot-label">Охлаждение</span>
-            <span class="part-slot-value" id="slot-cooling">—</span>
-          </li>
-          <li class="part-slot" data-slot="psu">
-            <span class="part-slot-icon">🔌</span>
-            <span class="part-slot-label">Блок питания</span>
-            <span class="part-slot-value" id="slot-psu">—</span>
-          </li>
-        </ul>
-
-        <div class="build-summary" id="build-summary">
-          <div class="summary-row"><span>Энергопотребление:</span><b id="summary-power">0 Вт</b></div>
-          <div class="summary-row"><span>Хэшрейт:</span><b id="summary-hashrate">0 MH/s</b></div>
-          <div class="summary-row"><span>Стоимость сборки:</span><b id="summary-cost">0 ₽</b></div>
+      <!-- Майнинг-стойки -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">🗄️ Майнинг-стойки</h3>
+          <button class="btn btn--small" data-confirm="Купить стойку за 25 000 ₽?" id="btn-buy-rack">+ Стойка</button>
         </div>
+        <div class="racks-list" id="racks-list"><!-- рендер из game.js --></div>
       </div>
     </section>
 
-    <!-- ЭКРАН: КЕЙСЫ -->
+    <!-- ============ ЭКРАН: КЕЙСЫ ============ -->
     <section class="screen" id="screen-cases" data-screen="cases">
       <h2 class="screen-title">📦 Кейсы</h2>
 
-      <div class="cases-grid" id="cases-grid">
-        <!-- Карточки кейсов рендерятся из js/rewards.js -->
-      </div>
-
-      <div class="case-result hidden" id="case-result">
-        <div class="case-result-card" id="case-result-card">
-          <img class="case-result-img" id="case-result-img" alt="Награда" />
-          <p class="case-result-name" id="case-result-name"></p>
-          <p class="case-result-rarity" id="case-result-rarity"></p>
+      <!-- Бесплатный кейс наград каждые 4 часа -->
+      <div class="reward-case-banner" id="reward-case-banner">
+        <div class="rcb-icon">🎁</div>
+        <div class="rcb-text">
+          <b>Кейс наград</b>
+          <span id="reward-case-timer">готов к открытию!</span>
         </div>
-        <button class="btn btn--secondary" id="btn-close-case-result">Забрать</button>
+        <button class="btn btn--small btn--primary" id="btn-reward-case">Открыть</button>
+      </div>
+
+      <div class="multiplier-grid" id="multiplier-grid">
+        <button class="mult-btn mult-btn--active" data-mult="1">×1</button>
+        <button class="mult-btn" data-mult="3">×3</button>
+        <button class="mult-btn" data-mult="5">×5</button>
+        <button class="mult-btn" data-mult="10">×10</button>
+      </div>
+
+      <div class="cases-grid" id="cases-grid"><!-- карточки кейсов из game.js --></div>
+
+      <!-- Рулетка кейса -->
+      <div class="roulette hidden" id="roulette">
+        <div class="roulette-strip-wrap">
+          <div class="roulette-marker"></div>
+          <div class="roulette-strip" id="roulette-strip"></div>
+        </div>
+        <div class="roulette-batch" id="roulette-batch"></div>
       </div>
     </section>
 
-    <!-- ЭКРАН: КОЛЛЕКЦИЯ / ГАРАЖ -->
-    <section class="screen" id="screen-garage" data-screen="garage">
-      <h2 class="screen-title">🚗 Гараж / Коллекция</h2>
+    <!-- ============ ЭКРАН: МАСТЕРСКАЯ ============ -->
+    <section class="screen" id="screen-workshop" data-screen="workshop">
+      <h2 class="screen-title">🛠️ Мастерская</h2>
 
-      <div class="garage-tabs">
-        <button class="tab tab--active" data-tab="pcs">Готовые ПК</button>
-        <button class="tab" data-tab="asics">ASIC-майнеры</button>
-        <button class="tab" data-tab="parts">Комплектующие</button>
+      <div class="ws-tabs">
+        <button class="tab tab--active" data-ws-tab="build">Сборка ПК</button>
+        <button class="tab" data-ws-tab="merge">Слияние</button>
+        <button class="tab" data-ws-tab="duels">FPS-дуэли</button>
       </div>
 
-      <div class="garage-slots-info">
-        Слоты: <b id="garage-used">0</b> / <b id="garage-total">5</b>
-        <button class="btn btn--small" id="btn-buy-slot">+ слот</button>
+      <!-- Подвкладка: сборка из склада -->
+      <div class="ws-pane" id="ws-build">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">Проект сборки (8 слотов)</h3>
+            <button class="btn btn--small btn--primary" id="btn-finish-build">▶ Собрать</button>
+          </div>
+          <ul class="slots-list" id="slots-list"><!-- 8 слотов из game.js --></ul>
+          <div class="build-summary">
+            <div class="summary-row"><span>⚡ Энергопотребление</span><b id="sum-power">0 Вт</b></div>
+            <div class="summary-row"><span>🔢 Хэшрейт</span><b id="sum-hashrate">0 MH/s</b></div>
+            <div class="summary-row"><span>🎮 FPS-очки</span><b id="sum-fps">0</b></div>
+            <div class="summary-row summary-row--err" id="sum-error"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">📦 Склад деталей</h3>
+            <button class="btn btn--small" id="btn-asic-route">Собрать ASIC из 3 GPU</button>
+          </div>
+          <div class="warehouse-grid" id="warehouse-grid"><!-- детали склада --></div>
+        </div>
       </div>
 
-      <div class="collection-grid" id="collection-grid">
-        <!-- Пустые заглушки-ячейки; заполняются из js/game.js -->
+      <!-- Подвкладка: слияние -->
+      <div class="ws-pane hidden" id="ws-merge">
+        <div class="panel">
+          <h3 class="panel-title">⚗️ Слияние деталей</h3>
+          <p class="merge-rules">
+            3 одинаковые детали → 1 деталь рангом выше.<br>
+            🟢 Успех — <b>75%</b> · 🟡 Выжила одна — <b>13%</b> · 🔴 Сгорели все — <b>12%</b>
+          </p>
+          <div class="merge-list" id="merge-list"><!-- варианты слияния --></div>
+        </div>
       </div>
 
-      <div class="mining-racks" id="mining-racks">
-        <h3 class="panel-title">⚡ Майнинг-стойки</h3>
-        <div class="racks-list" id="racks-list"><!-- стойки рендерятся из game.js --></div>
+      <!-- Подвкладка: FPS-дуэли -->
+      <div class="ws-pane hidden" id="ws-duels">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">🎮 Бенчмарк-дуэли</h3>
+            <span class="capacity-badge" id="duel-energy">⚡ 10 / 10</span>
+          </div>
+          <p class="duel-hint">Сравнение мощности GPU, CPU, RAM и охлаждения. Дуэль стоит 2⚡.</p>
+          <div class="opponents-list" id="opponents-list"><!-- противники --></div>
+        </div>
+        <div class="duel-result hidden panel" id="duel-result"></div>
       </div>
     </section>
 
-    <!-- ЭКРАН: ПРОФИЛЬ (бонусный) -->
-    <section class="screen" id="screen-profile" data-screen="profile">
-      <h2 class="screen-title">👤 Профиль</h2>
+    <!-- ============ ЭКРАН: МЕНЮ ============ -->
+    <section class="screen" id="screen-menu" data-screen="menu">
+      <h2 class="screen-title">📋 Меню</h2>
+
+      <!-- Ежедневный бонус -->
+      <div class="neon-card neon-card--green">
+        <h3 class="panel-title">🗓 Ежедневный бонус</h3>
+        <p class="streak-info">Серия входов: <b id="login-streak">0</b> 🔥</p>
+        <div class="bonus-days" id="bonus-days"><!-- 7 дней --></div>
+        <button class="btn btn--primary" id="btn-daily-bonus">Забрать бонус</button>
+      </div>
+
+      <!-- Задания -->
+      <div class="neon-card neon-card--blue">
+        <h3 class="panel-title">🎯 Задания</h3>
+        <div class="quests-list" id="quests-list"><!-- квесты --></div>
+      </div>
+
+      <!-- Коллекция -->
+      <div class="neon-card neon-card--purple">
+        <div class="panel-header">
+          <h3 class="panel-title">🏆 Коллекция оборудования</h3>
+          <span class="capacity-badge" id="collection-percent">0%</span>
+        </div>
+        <div class="collection-grid" id="collection-grid"><!-- модели [✓] --></div>
+      </div>
+
+      <!-- Расширение фермы -->
+      <div class="neon-card neon-card--orange">
+        <h3 class="panel-title">📈 Расширение фермы</h3>
+        <div class="expand-row">
+          <span>Слоты гаража: <b id="garage-used">1</b> / <b id="garage-total">5</b></span>
+          <button class="btn btn--small" id="btn-buy-slot" data-confirm="Купить слот?">+ Слот</button>
+        </div>
+        <div class="expand-row">
+          <span>Стойки: <b id="racks-count">0</b></span>
+          <button class="btn btn--small" id="btn-menu-rack">+ Стойка 25 000 ₽</button>
+        </div>
+      </div>
 
       <div class="panel">
-        <div class="daily-bonus" id="daily-bonus">
-          <h3 class="panel-title">Ежедневный бонус</h3>
-          <p class="streak-info">Серия входов: <b id="login-streak">0</b> 🔥</p>
-          <div class="bonus-days" id="bonus-days"><!-- 7 дней бонусов --></div>
-          <button class="btn btn--primary" id="btn-daily-bonus">Забрать бонус</button>
-        </div>
+        <button class="btn btn--danger" id="btn-reset" data-confirm="Сбросить весь прогресс игры?">🗑 Сбросить прогресс</button>
       </div>
     </section>
-
   </main>
 
-  <!-- =================== НИЖНЯЯ НАВИГАЦИЯ =================== -->
+  <!-- =================== НИЖНЯЯ НАВИГАЦИЯ (Liquid Glass) =================== -->
   <nav class="bottom-nav" id="bottom-nav">
-    <button class="nav-item nav-item--active" data-target="workshop">
-      <span class="nav-icon">🛠</span><span class="nav-label">Сборка</span>
+    <button class="nav-item nav-item--active" data-target="farm">
+      <span class="nav-icon">⛏️</span><span class="nav-label">Ферма</span>
     </button>
     <button class="nav-item" data-target="cases">
       <span class="nav-icon">📦</span><span class="nav-label">Кейсы</span>
     </button>
-    <button class="nav-item" data-target="garage">
-      <span class="nav-icon">🚗</span><span class="nav-label">Гараж</span>
+    <button class="nav-item" data-target="workshop">
+      <span class="nav-icon">🛠️</span><span class="nav-label">Мастерская</span>
     </button>
-    <button class="nav-item" data-target="profile">
-      <span class="nav-icon">👤</span><span class="nav-label">Профиль</span>
+    <button class="nav-item" data-target="menu">
+      <span class="nav-icon">📋</span><span class="nav-label">Меню</span>
     </button>
   </nav>
 
-  <!-- ================= СКРИПТЫ ПРИЛОЖЕНИЯ ================= -->
-  <!-- Порядок важен: сначала правила, затем награды, затем координация -->
+  <!-- =================== МОДАЛКА (bottom sheet) =================== -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-sheet" id="modal-sheet" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title" id="sheet-title">—</h3>
+        <button class="sheet-close" id="sheet-close" aria-label="Закрыть">✕</button>
+      </div>
+      <div class="sheet-body" id="sheet-body"><!-- динамический контент --></div>
+    </div>
+  </div>
+
+  <!-- Контейнер тостов -->
+  <div class="toast-stack" id="toast-stack"></div>
+
+  <!-- ================= СКРИПТЫ (порядок важен) ================= -->
+  <script src="js/data.js"></script>
   <script src="js/rules.js"></script>
+  <script src="js/workshop.js"></script>
   <script src="js/rewards.js"></script>
+  <script src="js/fps.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>
