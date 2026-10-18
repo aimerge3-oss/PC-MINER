@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="var(--tg-theme-bg-color)" />
+  <title>PC-Miner — Telegram Mini App</title>
+
+  <!-- Telegram WebApp SDK (должен быть подключен до инициализации приложения) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Стили приложения -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="app-header" id="app-header">
+    <div class="header-left">
+      <div class="avatar" id="user-avatar" title="Профиль игрока">👤</div>
+      <div class="user-meta">
+        <span class="user-name" id="user-name">Игрок</span>
+        <span class="user-level" id="user-level">Уровень 1</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="balance-chip" id="balance-chip" title="Основная валюта">
+        <span class="chip-icon">💰</span>
+        <span class="chip-value" id="balance-value">0</span>
+      </div>
+      <div class="balance-chip balance-chip--crypto" id="crypto-chip" title="Крипто-баланс">
+        <span class="chip-icon">⛏️</span>
+        <span class="chip-value" id="crypto-value">0.000000</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- =================== ОСНОВНАЯ ЗОНА =================== -->
+  <main class="app-main" id="app-main">
+
+    <!-- ЭКРАН: МАСТЕРСКАЯ / СБОРКА -->
+    <section class="screen screen--active" id="screen-workshop" data-screen="workshop">
+      <h2 class="screen-title">🛠 Мастерская</h2>
+
+      <!-- Кликер-зона -->
+      <div class="clicker-zone" id="clicker-zone">
+        <button class="clicker-button" id="clicker-btn" aria-label="Кликнуть для заработка">
+          <span class="clicker-icon">🖱️</span>
+          <span class="clicker-label">КЛИК</span>
+        </button>
+        <p class="clicker-hint">+<span id="click-power">1</span> ₽ за клик</p>
+      </div>
+
+      <!-- Текущая сборка ПК -->
+      <div class="panel" id="build-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Текущая сборка</h3>
+          <button class="btn btn--small" id="btn-assemble">Собрать ПК</button>
+        </div>
+
+        <ul class="parts-list" id="parts-list">
+          <li class="part-slot" data-slot="cpu">
+            <span class="part-slot-icon">🧠</span>
+            <span class="part-slot-label">Процессор</span>
+            <span class="part-slot-value" id="slot-cpu">—</span>
+          </li>
+          <li class="part-slot" data-slot="gpu">
+            <span class="part-slot-icon">🎮</span>
+            <span class="part-slot-label">Видеокарта</span>
+            <span class="part-slot-value" id="slot-gpu">—</span>
+          </li>
+          <li class="part-slot" data-slot="motherboard">
+            <span class="part-slot-icon">🔲</span>
+            <span class="part-slot-label">Материнская плата</span>
+            <span class="part-slot-value" id="slot-motherboard">—</span>
+          </li>
+          <li class="part-slot" data-slot="ram">
+            <span class="part-slot-icon">📊</span>
+            <span class="part-slot-label">Оперативная память</span>
+            <span class="part-slot-value" id="slot-ram">—</span>
+          </li>
+          <li class="part-slot" data-slot="storage">
+            <span class="part-slot-icon">💾</span>
+            <span class="part-slot-label">Накопитель</span>
+            <span class="part-slot-value" id="slot-storage">—</span>
+          </li>
+          <li class="part-slot" data-slot="cooling">
+            <span class="part-slot-icon">❄️</span>
+            <span class="part-slot-label">Охлаждение</span>
+            <span class="part-slot-value" id="slot-cooling">—</span>
+          </li>
+          <li class="part-slot" data-slot="psu">
+            <span class="part-slot-icon">🔌</span>
+            <span class="part-slot-label">Блок питания</span>
+            <span class="part-slot-value" id="slot-psu">—</span>
+          </li>
+        </ul>
+
+        <div class="build-summary" id="build-summary">
+          <div class="summary-row"><span>Энергопотребление:</span><b id="summary-power">0 Вт</b></div>
+          <div class="summary-row"><span>Хэшрейт:</span><b id="summary-hashrate">0 MH/s</b></div>
+          <div class="summary-row"><span>Стоимость сборки:</span><b id="summary-cost">0 ₽</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЭКРАН: КЕЙСЫ -->
+    <section class="screen" id="screen-cases" data-screen="cases">
+      <h2 class="screen-title">📦 Кейсы</h2>
+
+      <div class="cases-grid" id="cases-grid">
+        <!-- Карточки кейсов рендерятся из js/rewards.js -->
+      </div>
+
+      <div class="case-result hidden" id="case-result">
+        <div class="case-result-card" id="case-result-card">
+          <img class="case-result-img" id="case-result-img" alt="Награда" />
+          <p class="case-result-name" id="case-result-name"></p>
+          <p class="case-result-rarity" id="case-result-rarity"></p>
+        </div>
+        <button class="btn btn--secondary" id="btn-close-case-result">Забрать</button>
+      </div>
+    </section>
+
+    <!-- ЭКРАН: КОЛЛЕКЦИЯ / ГАРАЖ -->
+    <section class="screen" id="screen-garage" data-screen="garage">
+      <h2 class="screen-title">🚗 Гараж / Коллекция</h2>
+
+      <div class="garage-tabs">
+        <button class="tab tab--active" data-tab="pcs">Готовые ПК</button>
+        <button class="tab" data-tab="asics">ASIC-майнеры</button>
+        <button class="tab" data-tab="parts">Комплектующие</button>
+      </div>
+
+      <div class="garage-slots-info">
+        Слоты: <b id="garage-used">0</b> / <b id="garage-total">5</b>
+        <button class="btn btn--small" id="btn-buy-slot">+ слот</button>
+      </div>
+
+      <div class="collection-grid" id="collection-grid">
+        <!-- Пустые заглушки-ячейки; заполняются из js/game.js -->
+      </div>
+
+      <div class="mining-racks" id="mining-racks">
+        <h3 class="panel-title">⚡ Майнинг-стойки</h3>
+        <div class="racks-list" id="racks-list"><!-- стойки рендерятся из game.js --></div>
+      </div>
+    </section>
+
+    <!-- ЭКРАН: ПРОФИЛЬ (бонусный) -->
+    <section class="screen" id="screen-profile" data-screen="profile">
+      <h2 class="screen-title">👤 Профиль</h2>
+
+      <div class="panel">
+        <div class="daily-bonus" id="daily-bonus">
+          <h3 class="panel-title">Ежедневный бонус</h3>
+          <p class="streak-info">Серия входов: <b id="login-streak">0</b> 🔥</p>
+          <div class="bonus-days" id="bonus-days"><!-- 7 дней бонусов --></div>
+          <button class="btn btn--primary" id="btn-daily-bonus">Забрать бонус</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =================== НИЖНЯЯ НАВИГАЦИЯ =================== -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item nav-item--active" data-target="workshop">
+      <span class="nav-icon">🛠</span><span class="nav-label">Сборка</span>
+    </button>
+    <button class="nav-item" data-target="cases">
+      <span class="nav-icon">📦</span><span class="nav-label">Кейсы</span>
+    </button>
+    <button class="nav-item" data-target="garage">
+      <span class="nav-icon">🚗</span><span class="nav-label">Гараж</span>
+    </button>
+    <button class="nav-item" data-target="profile">
+      <span class="nav-icon">👤</span><span class="nav-label">Профиль</span>
+    </button>
+  </nav>
+
+  <!-- ================= СКРИПТЫ ПРИЛОЖЕНИЯ ================= -->
+  <!-- Порядок важен: сначала правила, затем награды, затем координация -->
+  <script src="js/rules.js"></script>
+  <script src="js/rewards.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
