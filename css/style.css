@@ -1,11 +1,10 @@
 /* ============================================================
-   PC-Miner — Telegram Mini App
-   Мобайл-ферст стили с динамическими переменными темы Telegram
+   Crypto Rigs: Master & Mining — Telegram Mini App
+   Mobile-First стили на динамических переменных темы Telegram.
    ============================================================ */
 
-/* ---------- 1. Базовые настройки и TG-переменные (fallback) ---------- */
+/* ---------- 1. База: TG-переменные + fallback для браузера ---------- */
 :root {
-  /* Значения по умолчанию, если Telegram их не задал (браузерный режим) */
   --tg-bg: var(--tg-theme-bg-color, #0f0f14);
   --tg-text: var(--tg-theme-text-color, #ffffff);
   --tg-hint: var(--tg-theme-hint-color, #9a9aa8);
@@ -26,13 +25,20 @@
   --gap: 12px;
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
   --transition: 0.2s ease;
+  --hairline: rgba(255, 255, 255, 0.08);
 
-  /* Редкости предметов */
-  --rarity-common: #9aa0a6;
-  --rarity-uncommon: #4caf50;
-  --rarity-rare: #45a3f8;
-  --rarity-epic: #b06cf5;
-  --rarity-legendary: #ffb020;
+  /* Редкости (совпадают с Data.RARITY) */
+  --rarity-common: #9aa4b2;
+  --rarity-uncommon: #3fb950;
+  --rarity-rare: #58a6ff;
+  --rarity-epic: #bc8cff;
+  --rarity-legendary: #f0b429;
+
+  /* Neon-акценты меню */
+  --neon-green: #3fb950;
+  --neon-blue: #58a6ff;
+  --neon-purple: #bc8cff;
+  --neon-orange: #f0b429;
 }
 
 * {
@@ -44,12 +50,11 @@
 
 html, body {
   height: 100%;
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--tg-bg);
   color: var(--tg-text);
   display: flex;
@@ -57,489 +62,624 @@ body {
   min-height: 100vh;
   user-select: none;
   -webkit-user-select: none;
+  font-size: 15px;
+  line-height: 1.35;
 }
+
+.hidden { display: none !important; }
 
 /* ---------- 2. Шапка ---------- */
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap);
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
   background: var(--tg-header-bg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--hairline);
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+.header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   background: var(--tg-section-bg);
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-  flex-shrink: 0;
+  display: grid; place-items: center;
+  font-size: 20px; flex-shrink: 0;
 }
 
-.user-meta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+.user-meta { display: flex; flex-direction: column; min-width: 0; }
+.user-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-level { font-size: 11px; color: var(--tg-hint); }
 
-.user-name {
-  font-weight: 600;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-level {
-  font-size: 12px;
-  color: var(--tg-hint);
-}
-
-.header-right {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.header-right { display: flex; gap: 6px; flex-shrink: 0; }
 
 .balance-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  display: flex; align-items: center; gap: 4px;
   background: var(--tg-section-bg);
-  font-size: 13px;
-  font-weight: 600;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  max-width: 110px;
 }
+.chip-icon { font-size: 12px; }
+.chip-value { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip-cur { color: var(--tg-hint); font-size: 10px; }
+.balance-chip--crypto .chip-value { color: var(--rarity-legendary); }
+.balance-chip--energy .chip-value { color: var(--neon-green); }
 
-.balance-chip--crypto .chip-value {
-  color: var(--tg-link);
-}
-
-/* ---------- 3. Основная зона ---------- */
+/* ---------- 3. Основная зона и экраны ---------- */
 .app-main {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 14px calc(96px + env(safe-area-inset-bottom));
 }
 
-.screen {
-  display: none;
-  animation: fadeIn 0.25s ease;
-}
+.screen { display: none; animation: screenIn 0.22s ease; }
+.screen--active { display: block; }
 
-.screen--active {
-  display: block;
-}
-
-@keyframes fadeIn {
+@keyframes screenIn {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 
 .screen-title {
   font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 14px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
 }
 
-/* ---------- 4. Кликер ---------- */
-.clicker-zone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.clicker-button {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  background: radial-gradient(circle at 30% 30%,
-              color-mix(in srgb, var(--tg-button) 85%, white),
-              var(--tg-button));
-  color: var(--tg-button-text);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: var(--shadow);
-  transition: transform 0.08s ease;
-}
-
-.clicker-button:active {
-  transform: scale(0.93);
-}
-
-.clicker-icon { font-size: 44px; }
-.clicker-label { font-weight: 800; letter-spacing: 2px; font-size: 14px; }
-
-.clicker-hint {
-  font-size: 13px;
-  color: var(--tg-hint);
-}
-
-/* Всплывающие "+N" при клике */
-.float-plus {
-  position: absolute;
-  font-weight: 700;
-  color: var(--tg-button);
-  pointer-events: none;
-  animation: floatUp 0.8s ease forwards;
-}
-
-@keyframes floatUp {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-48px); }
-}
-
-/* ---------- 5. Панели / слоты сборки ---------- */
 .panel {
   background: var(--tg-section-bg);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 14px;
+  margin-bottom: var(--gap);
 }
 
 .panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
 }
 
-.panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--tg-section-header);
-}
-
-.parts-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.part-slot {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  background: var(--tg-secondary-bg);
-  font-size: 14px;
-}
-
-.part-slot-icon { font-size: 18px; }
-.part-slot-label { color: var(--tg-hint); }
-
-.part-slot-value {
-  font-weight: 600;
-  max-width: 45%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.part-slot--filled .part-slot-value { color: var(--tg-link); }
-
-.build-summary {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.12);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
+.panel-title { font-size: 15px; font-weight: 700; color: var(--tg-text); }
+.capacity-badge {
+  font-size: 12px; font-weight: 700;
   color: var(--tg-hint);
+  background: var(--tg-secondary-bg);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
 }
 
-.summary-row b { color: var(--tg-text); }
-
-/* ---------- 6. Кнопки ---------- */
+/* ---------- 4. Кнопки ---------- */
 .btn {
   border: none;
   border-radius: var(--radius-md);
-  padding: 12px 18px;
+  background: var(--tg-section-bg);
+  color: var(--tg-text);
+  font-weight: 600;
   font-size: 14px;
-  font-weight: 600;
+  padding: 11px 16px;
   cursor: pointer;
-  transition: opacity var(--transition), transform var(--transition);
-  background: var(--tg-button);
-  color: var(--tg-button-text);
+  transition: transform 0.1s ease, opacity var(--transition), filter var(--transition);
+  font-family: inherit;
 }
+.btn:active { transform: scale(0.96); filter: brightness(0.9); }
+.btn:disabled { opacity: 0.45; pointer-events: none; }
 
-.btn:active { transform: scale(0.97); opacity: 0.85; }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
+.btn--primary { background: var(--tg-button); color: var(--tg-button-text); }
+.btn--sell {
+  background: linear-gradient(135deg, var(--rarity-legendary), #d98b00);
+  color: #1a1200;
+}
+.btn--danger { background: transparent; color: var(--tg-destructive); border: 1px solid var(--tg-destructive); width: 100%; }
 .btn--small { padding: 7px 12px; font-size: 12px; border-radius: var(--radius-sm); }
-.btn--primary { width: 100%; }
-.btn--secondary { background: var(--tg-secondary-bg); color: var(--tg-text); }
-.btn--destructive { background: var(--tg-destructive); color: #fff; }
+.btn small { font-weight: 500; opacity: 0.85; font-size: 11px; }
 
-/* ---------- 7. Кейсы ---------- */
-.cases-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--gap);
+/* ---------- 5. Ферма: майнинг ---------- */
+.mining-panel { background: linear-gradient(160deg, var(--tg-section-bg), var(--tg-secondary-bg)); }
+
+.mining-stats { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label { font-size: 11px; color: var(--tg-section-header); text-transform: uppercase; letter-spacing: 0.4px; }
+.stat b { font-size: 15px; }
+
+.mining-progress-wrap { margin-bottom: 12px; }
+.mining-progress {
+  height: 8px; border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
+  overflow: hidden;
 }
-
-.case-card {
-  background: var(--tg-section-bg);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.case-card-img {
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
-  font-size: 56px;
-  line-height: 84px;
-}
-
-.case-card-name { font-size: 14px; font-weight: 700; }
-.case-card-price { font-size: 13px; color: var(--tg-hint); }
-
-/* Результат открытия кейса */
-.case-result {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 24px;
-}
-
-.hidden { display: none !important; }
-
-.case-result-card {
-  background: var(--tg-section-bg);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  text-align: center;
-  box-shadow: var(--shadow);
-  animation: popIn 0.3s ease;
-  border: 2px solid var(--rarity-common);
-}
-
-.case-result-card[data-rarity="uncommon"]  { border-color: var(--rarity-uncommon); }
-.case-result-card[data-rarity="rare"]      { border-color: var(--rarity-rare); }
-.case-result-card[data-rarity="epic"]      { border-color: var(--rarity-epic); }
-.case-result-card[data-rarity="legendary"] { border-color: var(--rarity-legendary); }
-
-@keyframes popIn {
-  from { transform: scale(0.7); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-.case-result-img { width: 110px; height: 110px; object-fit: contain; }
-.case-result-name { margin-top: 10px; font-weight: 700; }
-.case-result-rarity { font-size: 12px; color: var(--tg-hint); text-transform: uppercase; }
-
-/* ---------- 8. Гараж / Коллекция ---------- */
-.garage-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tab {
-  flex: 1;
-  white-space: nowrap;
-  border: none;
-  padding: 9px 12px;
+.mining-progress-bar {
+  height: 100%; width: 0%;
   border-radius: 999px;
-  background: var(--tg-section-bg);
+  background: linear-gradient(90deg, var(--tg-button), var(--neon-green));
+  transition: width 0.6s ease;
+}
+.mining-window-hint { display: block; font-size: 11px; color: var(--tg-hint); margin-top: 5px; }
+
+.farm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.farm-actions .btn { line-height: 1.25; }
+
+.tap-strip {
+  margin-top: var(--gap);
+  width: 100%;
+  border: 1px dashed var(--hairline);
+  background: transparent;
   color: var(--tg-hint);
+  border-radius: var(--radius-md);
+  padding: 10px;
   font-size: 13px;
-  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition);
 }
+.tap-strip b { color: var(--neon-green); }
+.tap-strip:active { transform: scale(0.98); }
 
-.tab--active { background: var(--tg-button); color: var(--tg-button-text); }
-
-.garage-slots-info {
-  font-size: 13px;
-  color: var(--tg-hint);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.collection-grid {
+/* Карточки устройств / оборудования */
+.devices-grid, .warehouse-grid, .collection-grid, .roulette-batch {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: var(--gap);
-  margin-bottom: 18px;
-}
-
-.collection-cell {
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius-md);
-  background: var(--tg-section-bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--tg-hint);
-  text-align: center;
-  padding: 6px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-}
-
-.collection-cell--empty::before { content: "➕"; font-size: 20px; opacity: 0.4; }
-
-.collection-cell img { width: 56px; height: 56px; object-fit: contain; }
-.collection-cell .item-name { font-weight: 600; color: var(--tg-text); }
-
-.mining-racks .racks-list {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.rack-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--tg-section-bg);
+.device-card, .part-card, .collect-cell {
+  position: relative;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-md);
-  padding: 12px;
+  padding: 10px 8px;
+  display: flex; flex-direction: column; gap: 4px;
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.12s ease;
+}
+.device-card:active, .part-card:active { transform: scale(0.96); }
+
+.device-card img, .part-card img, .collect-cell img {
+  width: 100%; height: 44px; object-fit: contain;
+}
+.card-emoji { font-size: 28px; line-height: 44px; }
+.item-name {
+  font-size: 11px; font-weight: 600;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.item-stat { font-size: 10px; color: var(--tg-hint); }
+.item-count {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 10px; font-weight: 800;
+  background: var(--tg-button); color: var(--tg-button-text);
+  border-radius: 999px; padding: 1px 7px;
+}
+
+/* Редкостные рамки */
+[data-rarity="common"]    { border-color: color-mix(in srgb, var(--rarity-common) 45%, transparent); }
+[data-rarity="uncommon"]  { border-color: color-mix(in srgb, var(--rarity-uncommon) 55%, transparent); }
+[data-rarity="rare"]      { border-color: color-mix(in srgb, var(--rarity-rare) 60%, transparent); }
+[data-rarity="epic"]      { border-color: color-mix(in srgb, var(--rarity-epic) 65%, transparent); }
+[data-rarity="legendary"] {
+  border-color: var(--rarity-legendary);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--rarity-legendary) 35%, transparent);
+}
+.rarity-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.rarity-tag--common { color: var(--rarity-common); }
+.rarity-tag--uncommon { color: var(--rarity-uncommon); }
+.rarity-tag--rare { color: var(--rarity-rare); }
+.rarity-tag--epic { color: var(--rarity-epic); }
+.rarity-tag--legendary { color: var(--rarity-legendary); }
+
+/* Стойки */
+.racks-list { display: flex; flex-direction: column; gap: 8px; }
+.rack-row {
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.rack-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.rack-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.rack-slot {
+  min-height: 46px;
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--tg-hint);
+  padding: 4px; text-align: center; cursor: pointer;
+}
+.rack-slot--filled { border-style: solid; color: var(--tg-text); background: var(--tg-section-bg); }
+.racks-empty { font-size: 12px; color: var(--tg-hint); }
+
+/* ---------- 6. Кейсы ---------- */
+.reward-case-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--neon-green) 22%, var(--tg-section-bg)), var(--tg-section-bg));
+  border: 1px solid color-mix(in srgb, var(--neon-green) 45%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  margin-bottom: var(--gap);
+}
+.rcb-icon { font-size: 26px; }
+.rcb-text { flex: 1; display: flex; flex-direction: column; }
+.rcb-text span { font-size: 12px; color: var(--tg-hint); }
+.reward-case-banner.is-ready { animation: pulseGlow 1.6s infinite; }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neon-green) 40%, transparent); }
+  50% { box-shadow: 0 0 18px 2px color-mix(in srgb, var(--neon-green) 45%, transparent); }
+}
+
+/* Сетка множителей ×1/×3/×5/×10 */
+.multiplier-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin-bottom: var(--gap);
+}
+.mult-btn {
+  padding: 9px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--tg-section-bg);
+  color: var(--tg-hint);
+  font-weight: 800; font-size: 14px;
+  font-family: inherit; cursor: pointer;
+}
+.mult-btn--active {
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  border-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--tg-button) 40%, transparent);
+}
+
+.cases-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+
+.case-card {
+  position: relative;
+  background: var(--tg-section-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 14px 10px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center;
+}
+.case-card-img { font-size: 40px; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tg-button) 40%, transparent)); }
+.case-card-name { font-weight: 700; font-size: 13px; }
+.case-card-price { font-size: 12px; color: var(--tg-hint); }
+.case-keys {
+  position: absolute; top: 6px; left: 8px;
+  font-size: 11px; font-weight: 800;
+  color: var(--rarity-legendary);
+}
+.case-card-actions { display: flex; gap: 6px; width: 100%; margin-top: 4px; }
+.case-card-actions .btn { flex: 1; }
+
+/* Рулетка кейса */
+.roulette { margin-top: var(--gap); }
+.roulette-strip-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--tg-secondary-bg);
+  height: 110px;
+}
+.roulette-marker {
+  position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 3px; margin-left: -1.5px;
+  background: var(--rarity-legendary);
+  z-index: 2;
+  box-shadow: 0 0 10px var(--rarity-legendary);
+}
+.roulette-strip {
+  display: flex;
+  gap: 6px;
+  padding: 10px 6px;
+  width: max-content;
+  will-change: transform;
+}
+.roulette-item {
+  width: 86px; flex-shrink: 0;
+  background: var(--tg-section-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 6px;
+  font-size: 10px; text-align: center;
+}
+.roulette-item .card-emoji { font-size: 26px; line-height: 30px; }
+
+.roulette-batch { margin-top: 10px; }
+
+/* ---------- 7. Мастерская ---------- */
+.ws-tabs {
+  display: flex; gap: 6px;
+  background: var(--tg-secondary-bg);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--gap);
+}
+.tab {
+  flex: 1;
+  border: none; background: transparent;
+  color: var(--tg-hint);
+  font-weight: 600; font-size: 13px;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  font-family: inherit; cursor: pointer;
+}
+.tab--active { background: var(--tg-button); color: var(--tg-button-text); }
+
+.slots-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.part-slot {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  cursor: pointer;
   font-size: 13px;
 }
+.part-slot--required::after { content: "★"; color: var(--rarity-legendary); margin-left: auto; font-size: 11px; }
+.part-slot--filled { border-color: color-mix(in srgb, var(--tg-button) 55%, transparent); }
+.slot-icon { font-size: 18px; }
+.slot-label { color: var(--tg-hint); min-width: 118px; font-size: 12px; }
+.slot-value { font-weight: 600; flex: 1; }
+.slot-clear { margin-left: auto; border: none; background: transparent; color: var(--tg-destructive); font-size: 14px; cursor: pointer; }
 
-/* ---------- 9. Ежедневный бонус ---------- */
-.streak-info { margin: 8px 0 12px; font-size: 14px; }
+.build-summary { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--tg-hint); }
+.summary-row b { color: var(--tg-text); }
+.summary-row--err { color: var(--tg-destructive); font-size: 12px; }
 
-.bonus-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.bonus-day {
-  border-radius: var(--radius-sm);
+.merge-rules { font-size: 12px; color: var(--tg-hint); margin-bottom: 10px; line-height: 1.5; }
+.merge-list { display: flex; flex-direction: column; gap: 8px; }
+.merge-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
   background: var(--tg-secondary-bg);
-  padding: 8px 2px;
-  text-align: center;
-  font-size: 10px;
-  color: var(--tg-hint);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  font-size: 13px;
+}
+.merge-row small { display: block; color: var(--tg-hint); font-size: 11px; }
+
+/* FPS-дуэли */
+.duel-hint { font-size: 12px; color: var(--tg-hint); margin-bottom: 10px; }
+.opponents-list { display: flex; flex-direction: column; gap: 8px; }
+.opponent-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.opp-info { flex: 1; min-width: 0; }
+.opp-name { font-size: 13px; font-weight: 700; }
+.opp-fps { font-size: 11px; color: var(--tg-hint); }
+.tier-badge {
+  font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--tg-section-bg);
+  color: var(--rarity-rare);
+  border: 1px solid var(--hairline);
 }
 
-.bonus-day--claimed { opacity: 0.45; text-decoration: line-through; }
-.bonus-day--today { outline: 2px solid var(--tg-button); }
-.bonus-day .day-reward { font-size: 14px; }
+.duel-result { text-align: center; }
+.duel-vs { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; font-size: 14px; }
+.duel-score { font-size: 24px; font-weight: 900; }
+.duel-win { color: var(--neon-green); }
+.duel-lose { color: var(--tg-destructive); }
+.duel-note { font-size: 12px; color: var(--tg-hint); margin-top: 6px; }
 
-/* ---------- 10. Нижняя навигация ---------- */
+/* ---------- 8. Меню: неоновые плашки ---------- */
+.neon-card {
+  border-radius: var(--radius-lg);
+  background: var(--tg-section-bg);
+  padding: 14px;
+  margin-bottom: var(--gap);
+  border: 1px solid transparent;
+}
+.neon-card--green  { border-color: color-mix(in srgb, var(--neon-green) 55%, transparent);  box-shadow: inset 0 0 24px color-mix(in srgb, var(--neon-green) 8%, transparent), 0 0 12px color-mix(in srgb, var(--neon-green) 18%, transparent); }
+.neon-card--blue   { border-color: color-mix(in srgb, var(--neon-blue) 55%, transparent);   box-shadow: inset 0 0 24px color-mix(in srgb, var(--neon-blue) 8%, transparent), 0 0 12px color-mix(in srgb, var(--neon-blue) 18%, transparent); }
+.neon-card--purple { border-color: color-mix(in srgb, var(--neon-purple) 55%, transparent); box-shadow: inset 0 0 24px color-mix(in srgb, var(--neon-purple) 8%, transparent), 0 0 12px color-mix(in srgb, var(--neon-purple) 18%, transparent); }
+.neon-card--orange { border-color: color-mix(in srgb, var(--neon-orange) 55%, transparent); box-shadow: inset 0 0 24px color-mix(in srgb, var(--neon-orange) 8%, transparent), 0 0 12px color-mix(in srgb, var(--neon-orange) 18%, transparent); }
+
+.streak-info { font-size: 13px; color: var(--tg-hint); margin-bottom: 10px; }
+.bonus-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 10px; }
+.bonus-day {
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--tg-hint);
+  display: flex; flex-direction: column; gap: 2px; align-items: center;
+}
+.bonus-day .day-reward { font-size: 14px; }
+.bonus-day--claimed { opacity: 0.45; border-color: var(--neon-green); }
+.bonus-day--today { border-color: var(--tg-button); box-shadow: 0 0 8px color-mix(in srgb, var(--tg-button) 45%, transparent); }
+
+.quests-list { display: flex; flex-direction: column; gap: 8px; }
+.quest-row { background: var(--tg-secondary-bg); border: 1px solid var(--hairline); border-radius: var(--radius-md); padding: 9px 12px; }
+.quest-title { font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; }
+.quest-desc { font-size: 11px; color: var(--tg-hint); margin: 2px 0 6px; }
+.quest-bar { height: 5px; background: var(--tg-section-bg); border-radius: 999px; overflow: hidden; }
+.quest-bar i { display: block; height: 100%; background: var(--tg-button); border-radius: 999px; transition: width 0.4s ease; }
+.quest-row--done { opacity: 0.55; }
+.quest-row--done .quest-title::after { content: "✓ выполнено"; color: var(--neon-green); font-size: 11px; }
+
+.expand-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 0; color: var(--tg-hint); }
+
+/* Коллекция [✓] */
+.collect-cell { padding: 8px 6px; }
+.collect-cell--locked { opacity: 0.4; filter: grayscale(0.9); }
+.collect-check { font-size: 11px; font-weight: 800; color: var(--neon-green); }
+
+/* ---------- 9. Нижняя навигация «Liquid Glass» ---------- */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-  background: var(--tg-header-bg);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  left: 12px; right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 6px;
+  border-radius: 26px;
+  /* Жидкое стекло: blur + полупрозрачность + блик */
+  background: color-mix(in srgb, var(--tg-bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
   border: none;
   background: transparent;
   color: var(--tg-hint);
-  font-size: 11px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 4px;
+  border-radius: 20px;
+  font-family: inherit;
   cursor: pointer;
-  padding: 6px 0;
-  transition: color var(--transition);
+  transition: color var(--transition), background var(--transition), transform 0.12s ease;
+}
+.nav-icon { font-size: 19px; line-height: 1; }
+.nav-label { font-size: 10px; font-weight: 600; }
+
+.nav-item--active {
+  color: var(--tg-button-text);
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--tg-button) 90%, white 10%),
+    color-mix(in srgb, var(--tg-button) 70%, black 8%));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--tg-button) 45%, transparent);
+}
+.nav-item:active { transform: scale(0.92); }
+
+/* ---------- 10. Модальная bottom sheet ---------- */
+.modal-overlay {
+  position: fixed; inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.modal-overlay:not(.hidden) { opacity: 1; pointer-events: auto; }
+
+.modal-sheet {
+  width: 100%;
+  max-height: 78vh;
+  background: var(--tg-secondary-bg);
+  border-radius: 22px 22px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-overlay:not(.hidden) .modal-sheet { transform: translateY(0); }
+
+.sheet-handle {
+  width: 42px; height: 5px;
+  background: var(--tg-hint);
+  opacity: 0.4;
+  border-radius: 999px;
+  margin: 4px auto 10px;
+}
+.sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.sheet-title { font-size: 17px; font-weight: 800; }
+.sheet-close {
+  border: none; background: var(--tg-section-bg);
+  color: var(--tg-hint);
+  width: 30px; height: 30px; border-radius: 50%;
+  font-size: 13px; cursor: pointer;
 }
 
-.nav-icon { font-size: 20px; }
+/* Таблица дропа в модалке «Что внутри» */
+.drop-table { display: flex; flex-direction: column; gap: 6px; }
+.drop-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--tg-section-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.drop-row .emoji { font-size: 20px; }
+.drop-name { flex: 1; min-width: 0; }
+.drop-name small { display: block; color: var(--tg-hint); font-size: 11px; }
+.drop-percent { font-weight: 800; font-size: 12px; color: var(--tg-hint); }
+.drop-owned { color: var(--neon-green); font-weight: 800; font-size: 12px; white-space: nowrap; }
 
-.nav-item--active { color: var(--tg-button); font-weight: 700; }
+/* Итог открытия кейса в модалке */
+.loot-hero { text-align: center; padding: 12px 0; }
+.loot-hero .card-emoji { font-size: 54px; }
+.loot-hero h4 { margin: 6px 0 2px; }
 
-/* ---------- 11. Уведомления (Haptic/Toast) ---------- */
-.toast {
+/* ---------- 11. Тосты ---------- */
+.toast-stack {
   position: fixed;
-  top: calc(16px + env(safe-area-inset-top));
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--tg-button);
-  color: var(--tg-button-text);
-  padding: 10px 18px;
+  left: 0; right: 0;
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  z-index: 60;
+  pointer-events: none;
+}
+.toast {
+  background: color-mix(in srgb, var(--tg-header-bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--tg-text);
+  border: 1px solid var(--hairline);
+  padding: 9px 16px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  z-index: 100;
+  max-width: 88vw;
+  text-align: center;
+  animation: toastIn 0.22s ease;
   box-shadow: var(--shadow);
-  animation: toastIn 0.25s ease;
 }
-
+.toast--error { color: var(--tg-destructive); border-color: color-mix(in srgb, var(--tg-destructive) 50%, transparent); }
+.toast--success { color: var(--neon-green); border-color: color-mix(in srgb, var(--neon-green) 50%, transparent); }
 @keyframes toastIn {
-  from { opacity: 0; transform: translate(-50%, -12px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(10px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
 }
 
-/* ---------- 12. Адаптивность ---------- */
-@media (min-width: 520px) {
-  .app-main { max-width: 520px; margin: 0 auto; width: 100%; }
-  .clicker-button { width: 190px; height: 190px; }
+/* Всплывающее +N на тапе */
+.float-plus {
+  position: absolute;
+  font-weight: 900;
+  color: var(--neon-green);
+  pointer-events: none;
+  animation: floatUp 0.8s ease forwards;
+  z-index: 5;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+@keyframes floatUp {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-46px); }
 }
 
-@media (max-width: 360px) {
-  .balance-chip { padding: 5px 8px; font-size: 12px; }
-  .bonus-days { grid-template-columns: repeat(4, 1fr); }
+/* ---------- 12. Адаптив и мелкие улучшения ---------- */
+@media (min-width: 480px) {
+  .cases-grid { grid-template-columns: repeat(3, 1fr); }
+  .app-main { max-width: 560px; margin: 0 auto; }
+  .bottom-nav { max-width: 536px; margin: 0 auto; }
 }
